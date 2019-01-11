@@ -81,6 +81,7 @@ UavcanNode::UavcanNode(uavcan::ICanDriver &can_driver, uavcan::ISystemClock &sys
 	_node_mutex(),
 	_esc_controller(_node),
 	_hardpoint_controller(_node),
+	_servo_controller(_node),
 	_time_sync_master(_node),
 	_time_sync_slave(_node),
 	_node_status_monitor(_node),
@@ -141,6 +142,7 @@ UavcanNode::~UavcanNode()
 	(void)orb_unsubscribe(_armed_sub);
 	(void)orb_unsubscribe(_test_motor_sub);
 	(void)orb_unsubscribe(_actuator_direct_sub);
+	orb_unadvertise(_outputs_pub);
 
 	// Removing the sensor bridges
 	auto br = _sensor_bridges.getHead();
@@ -659,6 +661,12 @@ int UavcanNode::init(uavcan::NodeID node_id)
 	}
 
 	ret = _hardpoint_controller.init();
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = _servo_controller.Init();
 
 	if (ret < 0) {
 		return ret;
