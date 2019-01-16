@@ -973,8 +973,13 @@ int UavcanNode::run()
 			}
 
 			// Output to the bus
+			// ToDo 1. в esc отдавать только чатсь моторов(второй параметр изменить), в servo-оставльное
 			_esc_controller.update_outputs(_outputs.output, _outputs.noutputs);
+			_servo_controller.UpdateOutputs(_outputs.output, 5);
 			_outputs.timestamp = hrt_absolute_time();
+
+			// fill actuator_outputs
+			orb_publish(ORB_ID(actuator_outputs), &_outputs_pub, &_outputs);
 
 			// use first valid timestamp_sample for latency tracking
 			for (int i = 0; i < actuator_controls_s::NUM_ACTUATOR_CONTROL_GROUPS; i++) {
