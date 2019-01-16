@@ -42,7 +42,7 @@
 #include <drivers/drv_hrt.h>
 
 UavcanServoController::UavcanServoController(uavcan::INode &node) :
-	node(node),
+	_node(node),
 	uavcanPublisher(node)
 {
 	this->uavcanPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
@@ -76,7 +76,7 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 	/*
 	 * Rate limiting - we don't want to congest the bus
 	 */
-	const auto timestamp = this->node.getMonotonicTime();
+	const auto timestamp = this->_node.getMonotonicTime();
 
 	if ((timestamp - this->previousPublication).toUSec() < (1000000 / MAX_RATE_HZ))
 		return;

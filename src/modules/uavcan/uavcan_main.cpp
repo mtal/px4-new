@@ -85,6 +85,7 @@ UavcanNode::UavcanNode(uavcan::ICanDriver &can_driver, uavcan::ISystemClock &sys
 	_time_sync_master(_node),
 	_time_sync_slave(_node),
 	_node_status_monitor(_node),
+	_outputs_pub(nullptr),
 	_perf_control_latency(perf_alloc(PC_ELAPSED, "uavcan control latency")),
 	_master_timer(_node),
 	_setget_response(0)

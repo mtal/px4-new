@@ -191,6 +191,8 @@ private:
 	uavcan::GlobalTimeSyncSlave		_time_sync_slave;
 	uavcan::NodeStatusMonitor		_node_status_monitor;
 
+	orb_advert_t					_outputs_pub;
+
 	List<IUavcanSensorBridge *>	_sensor_bridges;		///< List of active sensor bridges
 
 	MixerGroup			*_mixers = nullptr;

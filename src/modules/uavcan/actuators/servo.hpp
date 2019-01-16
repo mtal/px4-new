@@ -41,7 +41,6 @@
 
 #include <uavcan/uavcan.hpp>
 #include <uavcan/equipment/actuator/ArrayCommand.hpp>
-#include <uavcan/equipment/actuator/Status.hpp>
 #include <perf/perf_counter.h>
 
 class UavcanServoController
@@ -63,7 +62,7 @@ private:
 	/*
 	 * libuavcan related things
 	 */
-	uavcan::INode								                        &node;
+	uavcan::INode								                        &_node;
 	uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>        uavcanPublisher;
 	uavcan::MonotonicTime							                    previousPublication;   ///< rate limiting
 
