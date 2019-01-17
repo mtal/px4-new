@@ -70,6 +70,7 @@
 #include <uORB/topics/safety.h>
 #include <uORB/topics/vehicle_command.h>
 #include <uORB/topics/vehicle_status.h>
+#include  <uORB/topics/servo_outputs.h>
 
 #ifdef HRT_PPM_CHANNEL
 # include <systemlib/ppm_decode.h>
@@ -240,6 +241,7 @@ private:
 	bool		_analog_rc_rssi_stable;
 	orb_advert_t	_to_input_rc;
 	orb_advert_t	_outputs_pub;
+	orb_advert_t	_servo_outputs_pub;
 	unsigned	_num_outputs;
 	int		_class_instance;
 	int		_rcs_fd;
@@ -373,6 +375,7 @@ PX4FMU::PX4FMU(bool run_as_task) :
 	_analog_rc_rssi_stable(false),
 	_to_input_rc(nullptr),
 	_outputs_pub(nullptr),
+	_servo_outputs_pub(nullptr),
 	_num_outputs(0),
 	_class_instance(0),
 	_rcs_fd(-1),
@@ -462,6 +465,7 @@ PX4FMU::~PX4FMU()
 
 	orb_unadvertise(_to_input_rc);
 	orb_unadvertise(_outputs_pub);
+	orb_unadvertise(_servo_outputs_pub);
 	orb_unadvertise(_to_safety);
 	orb_unadvertise(_to_mixer_status);
 
@@ -1315,7 +1319,7 @@ PX4FMU::cycle()
 				/* do mixing */
 				float outputs[_max_actuators];
 				const unsigned mixed_num_outputs = _mixers->mix(outputs, _num_outputs);
-
+				
 				/* the PWM limit call takes care of out of band errors, NaN and constrains */
 				uint16_t pwm_limited[MAX_ACTUATORS];
 
@@ -1345,6 +1349,9 @@ PX4FMU::cycle()
 						up_pwm_servo_set(i, pwm_limited[i]);
 					}
 				}
+				
+				//warnx("mixed_num_outputs = %d", mixed_num_outputs);
+				//warnx("pwm_limited : %d, %d, %d, %d, %d", pwm_limited[0], pwm_limited[1], pwm_limited[2], pwm_limited[3], pwm_limited[4]);
 
 				/* Trigger all timer's channels in Oneshot mode to fire
 				 * the oneshots with updated values.
@@ -1357,12 +1364,19 @@ PX4FMU::cycle()
 				actuator_outputs.timestamp = hrt_absolute_time();
 				actuator_outputs.noutputs = mixed_num_outputs;
 
+				servo_outputs_s servo_outputs = {};
+				servo_outputs.timestamp = hrt_absolute_time();
+				servo_outputs.noutputs = mixed_num_outputs;
+
 				// zero unused outputs
 				for (size_t i = 0; i < mixed_num_outputs; ++i) {
 					actuator_outputs.output[i] = pwm_limited[i];
+					servo_outputs.output[i] = pwm_limited[i]; 
 				}
 
 				orb_publish_auto(ORB_ID(actuator_outputs), &_outputs_pub, &actuator_outputs, &_class_instance, ORB_PRIO_DEFAULT);
+				//warnx("pre sending: %d, %d, %d, %d, %d", (int)servo_outputs.output[0], (int)servo_outputs.output[1], (int)servo_outputs.output[2], (int)servo_outputs.output[3], (int)servo_outputs.output[4]); 
+				warnx("publish servo: %d", orb_publish_auto(ORB_ID(servo_outputs), &_servo_outputs_pub, &servo_outputs, &_class_instance, ORB_PRIO_DEFAULT)); 
 
 				/* publish mixer status */
 				MultirotorMixer::saturation_status saturation_status;
