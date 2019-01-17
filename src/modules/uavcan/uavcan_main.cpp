@@ -39,7 +39,6 @@
  * @author Pavel Kirienko <pavel.kirienko@gmail.com>
  * @author David Sidrane <david_s5@nscdg.com>
  * @author Andreas Jochum <Andreas@NicaDrone.com>
- * @author Biryukov Aleksey <abiryukov1996@gmail.com>
  *
  */
 
@@ -996,9 +995,6 @@ int UavcanNode::run()
 			_esc_controller.update_outputs(_outputs.output, _outputs.noutputs);
 			_servo_controller.UpdateOutputs(_servos.output, _servos.noutputs);
 			_outputs.timestamp = hrt_absolute_time();
-
-			// fill actuator_outputs
-			orb_publish_auto(ORB_ID(actuator_outputs), &_outputs_pub, &_outputs, &_class_instance, ORB_PRIO_DEFAULT);
 
 			// use first valid timestamp_sample for latency tracking
 			for (int i = 0; i < actuator_controls_s::NUM_ACTUATOR_CONTROL_GROUPS; i++) {

@@ -38,7 +38,7 @@
  *
  * @author Pavel Kirienko <pavel.kirienko@gmail.com>
  * @author Andreas Jochum <Andreas@NicaDrone.com>
- * @author Biryukov Aleksey <abiryukov1996@gmail.com>
+ * 
  */
 
 #pragma once
