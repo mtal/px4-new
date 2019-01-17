@@ -1390,6 +1390,7 @@ PX4FMU::cycle()
 				}
 
 				orb_publish_auto(ORB_ID(actuator_outputs), &_outputs_pub, &actuator_outputs, &_class_instance, ORB_PRIO_DEFAULT);
+				orb_publish_auto(ORB_ID(servo_outputs), &_servo_outputs_pub, &servo_outputs, &_class_instance, ORB_PRIO_DEFAULT);
 
 				/* publish mixer status */
 				MultirotorMixer::saturation_status saturation_status;
