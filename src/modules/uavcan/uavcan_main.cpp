@@ -779,13 +779,13 @@ int UavcanNode::run()
 	// XXX figure out the output count
 	_output_count = 2;
 
-	_armed_sub = orb_subscribe(ORB_ID(actuator_armed));
-	_test_motor_sub = orb_subscribe(ORB_ID(test_motor));
-	_actuator_direct_sub = orb_subscribe(ORB_ID(actuator_direct));
-
-	_servo_sub = orb_subscribe(ORB_ID(servo_outputs));
+	_armed_sub 				= orb_subscribe(ORB_ID(actuator_armed));
+	_test_motor_sub	 		= orb_subscribe(ORB_ID(test_motor));
+	_actuator_direct_sub 	= orb_subscribe(ORB_ID(actuator_direct));
+	_servo_sub 				= orb_subscribe(ORB_ID(servo_outputs));
 
 	memset(&_outputs, 0, sizeof(_outputs));
+	memset(&_servos, 0, sizeof(_servos));
 
 	/*
 	 * Set up the time synchronization
@@ -888,17 +888,13 @@ int UavcanNode::run()
 
 		node_spin_once();  // Non-blocking
 
+
+		// take pwm for servo
 		bool servo_updated = false;
 		orb_check(_servo_sub, &servo_updated);
- 		servo_outputs_s 		_servos = {};
-		if (servo_updated) {
+		if (servo_updated)
 			orb_copy(ORB_ID(servo_outputs), _servo_sub, &_servos);
-			if(_servos.noutputs == 5) {
-				warnx("new servos: %d, %d, %d, %d, %d", (int)_servos.output[0], (int)_servos.output[1], (int)_servos.output[2], (int)_servos.output[3], (int)_servos.output[4]); 
-			} else {
-				warnx("servos noutputs = %d", _servos.noutputs);
-			}
-		}
+
 
 		bool new_output = false;
 
@@ -958,7 +954,7 @@ int UavcanNode::run()
 
 				// Do mixing
 				_outputs.noutputs = _mixers->mix(&_outputs.output[0], num_outputs_max);
-//warnx("\nmixed_num_outputs = %d", _outputs.noutputs);
+
 				new_output = true;
 			}
 		}
@@ -988,9 +984,8 @@ int UavcanNode::run()
 			}
 
 			// Output to the bus
-			// ToDo 1. в esc отдавать только чатсь моторов(второй параметр изменить), в servo-оставльное
 			_esc_controller.update_outputs(_outputs.output, _outputs.noutputs);
-			_servo_controller.UpdateOutputs(_outputs.output, 5);
+			_servo_controller.UpdateOutputs(_servos.output, _servos.noutputs);
 			_outputs.timestamp = hrt_absolute_time();
 
 			// fill actuator_outputs

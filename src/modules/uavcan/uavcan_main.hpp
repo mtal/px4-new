@@ -209,11 +209,11 @@ private:
 	unsigned			_poll_fds_num = 0;
 	int32_t 			_idle_throttle_when_armed = 0;
 
-	int				_actuator_direct_sub = -1;   ///< uORB subscription of the actuator_direct topic
+	int					_actuator_direct_sub = -1;   ///< uORB subscription of the actuator_direct topic
 	uint8_t				_actuator_direct_poll_fd_num = 0;
-	actuator_direct_s		_actuator_direct = {};
-
-	actuator_outputs_s		_outputs = {};
+	actuator_direct_s	_actuator_direct 	= {};
+	actuator_outputs_s 	_outputs			= {};
+	servo_outputs_s 	_servos 			= {};
 
 	perf_counter_t			_perf_control_latency;
 
