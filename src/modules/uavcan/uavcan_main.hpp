@@ -37,7 +37,8 @@
  * Defines basic functinality of UAVCAN node.
  *
  * @author Pavel Kirienko <pavel.kirienko@gmail.com>
- *		 Andreas Jochum <Andreas@NicaDrone.com>
+ * @author Andreas Jochum <Andreas@NicaDrone.com>
+ * @author Biryukov Aleksey <abiryukov1996@gmail.com>
  */
 
 #pragma once
@@ -195,6 +196,7 @@ private:
 	uavcan::NodeStatusMonitor		_node_status_monitor;
 
 	orb_advert_t					_outputs_pub;
+	int								_class_instance;
 
 	List<IUavcanSensorBridge *>	_sensor_bridges;		///< List of active sensor bridges
 

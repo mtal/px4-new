@@ -90,27 +90,28 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 	uavcan::equipment::actuator::ArrayCommand msg;
 
 	static const float cmd_max  = 2000.0F;
-	static const float cmd_min  = 0.0F;
+	static const float cmd_min  = 1000.0F;
 
     for (unsigned i = 0; i < num_outputs; i++)
     {
-        float scaled = (outputs[i] + 1.0F) * 0.5F * cmd_max;
-
         // trim negative values back to minimum
-        if (scaled < cmd_min)
+        if (outputs[i] < cmd_min)
         {
-            scaled = cmd_min;
+            outputs[i] = cmd_min;
             perf_count(_perfcnt_scaling_error);
         }
 
-        if (scaled > cmd_max)
+        if (outputs[i] > cmd_max)
         {
-            scaled = cmd_max;
+            outputs[i] = cmd_max;
             perf_count(_perfcnt_scaling_error);
         }
 
-        msg.commands[i].actuator_id     = i;
-        msg.commands[i].command_value   = static_cast<int>(scaled);
+		uavcan::equipment::actuator::Command data;
+		data.actuator_id     = i;
+		data.command_value   = static_cast<int>(outputs[i]);
+		data.command_type 	 = -1;
+		msg.commands.push_back(data);
     }
 
 	/*

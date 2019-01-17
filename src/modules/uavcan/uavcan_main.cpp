@@ -39,6 +39,7 @@
  * @author Pavel Kirienko <pavel.kirienko@gmail.com>
  * @author David Sidrane <david_s5@nscdg.com>
  * @author Andreas Jochum <Andreas@NicaDrone.com>
+ * @author Biryukov Aleksey <abiryukov1996@gmail.com>
  *
  */
 
@@ -86,6 +87,7 @@ UavcanNode::UavcanNode(uavcan::ICanDriver &can_driver, uavcan::ISystemClock &sys
 	_time_sync_slave(_node),
 	_node_status_monitor(_node),
 	_outputs_pub(nullptr),
+	_class_instance(0),
 	_perf_control_latency(perf_alloc(PC_ELAPSED, "uavcan control latency")),
 	_master_timer(_node),
 	_setget_response(0)
@@ -117,7 +119,6 @@ UavcanNode::UavcanNode(uavcan::ICanDriver &can_driver, uavcan::ISystemClock &sys
 
 UavcanNode::~UavcanNode()
 {
-
 	fw_server(Stop);
 
 	if (_task != -1) {
@@ -164,6 +165,9 @@ UavcanNode::~UavcanNode()
 	if (_mixers != nullptr) {
 		delete _mixers;
 	}
+
+	/* clean up the alternate device node */
+	unregister_class_devname(PWM_OUTPUT_BASE_DEVICE_PATH, _class_instance);
 
 	perf_free(_perf_control_latency);
 }
@@ -691,6 +695,11 @@ int UavcanNode::init(uavcan::NodeID node_id)
 	}
 
 
+	// register class
+	if ((_class_instance = register_class_devname(UAVCAN_DEVICE_PATH)) < 0)
+		PX4_ERR("FAILED registering uavcan class device");
+
+
 	/*  Start the Node   */
 
 	return _node.start();
@@ -989,7 +998,7 @@ int UavcanNode::run()
 			_outputs.timestamp = hrt_absolute_time();
 
 			// fill actuator_outputs
-			orb_publish(ORB_ID(actuator_outputs), &_outputs_pub, &_outputs);
+			orb_publish_auto(ORB_ID(actuator_outputs), &_outputs_pub, &_outputs, &_class_instance, ORB_PRIO_DEFAULT);
 
 			// use first valid timestamp_sample for latency tracking
 			for (int i = 0; i < actuator_controls_s::NUM_ACTUATOR_CONTROL_GROUPS; i++) {
