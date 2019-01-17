@@ -144,6 +144,7 @@ UavcanNode::~UavcanNode()
 	(void)orb_unsubscribe(_test_motor_sub);
 	(void)orb_unsubscribe(_actuator_direct_sub);
 	orb_unadvertise(_outputs_pub);
+	(void)orb_unsubscribe(_servo_sub);
 
 	// Removing the sensor bridges
 	auto br = _sensor_bridges.getHead();
@@ -782,6 +783,8 @@ int UavcanNode::run()
 	_test_motor_sub = orb_subscribe(ORB_ID(test_motor));
 	_actuator_direct_sub = orb_subscribe(ORB_ID(actuator_direct));
 
+	_servo_sub = orb_subscribe(ORB_ID(servo_outputs));
+
 	memset(&_outputs, 0, sizeof(_outputs));
 
 	/*
@@ -885,6 +888,18 @@ int UavcanNode::run()
 
 		node_spin_once();  // Non-blocking
 
+		bool servo_updated = false;
+		orb_check(_servo_sub, &servo_updated);
+ 		servo_outputs_s 		_servos = {};
+		if (servo_updated) {
+			orb_copy(ORB_ID(servo_outputs), _servo_sub, &_servos);
+			if(_servos.noutputs == 5) {
+				warnx("new servos: %d, %d, %d, %d, %d", (int)_servos.output[0], (int)_servos.output[1], (int)_servos.output[2], (int)_servos.output[3], (int)_servos.output[4]); 
+			} else {
+				warnx("servos noutputs = %d", _servos.noutputs);
+			}
+		}
+
 		bool new_output = false;
 
 		// this would be bad...
@@ -943,7 +958,7 @@ int UavcanNode::run()
 
 				// Do mixing
 				_outputs.noutputs = _mixers->mix(&_outputs.output[0], num_outputs_max);
-
+//warnx("\nmixed_num_outputs = %d", _outputs.noutputs);
 				new_output = true;
 			}
 		}
@@ -1121,6 +1136,7 @@ UavcanNode::ioctl(file *filp, int cmd, unsigned long arg)
 		break;
 
 	case MIXERIOCRESET:
+	warnx("!!!!!! MIXER RESET");
 		if (_mixers != nullptr) {
 			delete _mixers;
 			_mixers = nullptr;
@@ -1130,6 +1146,7 @@ UavcanNode::ioctl(file *filp, int cmd, unsigned long arg)
 		break;
 
 	case MIXERIOCLOADBUF: {
+	warnx("!!!!!! MIXER LOADFROMBUF");
 			const char *buf = (const char *)arg;
 			unsigned buflen = strnlen(buf, 1024);
 
