@@ -46,12 +46,20 @@
 class UavcanServoController
 {
 public:
+	enum class Commands
+	{
+		PWM 		= 1,
+		Ignition 	= 2
+	}
+
 	UavcanServoController(uavcan::INode &node);
 	~UavcanServoController();
 
 	int Init();
 
 	void UpdateOutputs(float *outputs, unsigned num_outputs);
+
+	void UpdateIgnition(bool isWork);
 
 private:
 	static constexpr unsigned MAX_RATE_HZ                       = 100;	///< XXX make this configurable

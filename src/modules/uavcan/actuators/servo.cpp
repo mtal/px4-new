@@ -85,9 +85,8 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 
 	/*
 	 * Fill the command message
-	 * If unarmed, we publish an empty message anyway
 	 */
-	uavcan::equipment::actuator::ArrayCommand msg;
+	uavcan::equipment::actuator::ArrayCommand message;
 
 	static const float cmd_max  = 2000.0F;
 	static const float cmd_min  = 1000.0F;
@@ -110,13 +109,35 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 		uavcan::equipment::actuator::Command data;
 		data.actuator_id     = i;
 		data.command_value   = static_cast<int>(outputs[i]);
-		data.command_type 	 = -1;
-		msg.commands.push_back(data);
+		data.command_type 	 = Commands::PWM;
+		message.commands.push_back(data);
     }
 
 	/*
 	 * Publish the command message to the bus
 	 * Note that for a servo it takes one CAN frame
 	 */
-	(void)this->uavcanPublisher.broadcast(msg);
+	(void)this->uavcanPublisher.broadcast(message);
+}
+
+void UpdateIgnition(bool isWork)
+{
+
+	/*
+	* Rate limiting - we don't want to congest the bus
+	*/
+	const auto timestamp = this->_node.getMonotonicTime();
+
+	if ((timestamp - this->previousPublication).toUSec() < (1000000 / MAX_RATE_HZ))
+		return;
+
+	this->previousPublication = timestamp;
+
+	uavcan::equipment::actuator::Command message;
+
+	message.actuator_id     = -1;
+	message.command_value   = isWork;
+	message.command_type	= Commands::Ignition;
+
+	(void)this->uavcanPublisher.broadcast(message);
 }

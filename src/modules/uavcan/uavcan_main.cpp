@@ -994,6 +994,10 @@ int UavcanNode::run()
 			// Output to the bus
 			_esc_controller.update_outputs(_outputs.output, _outputs.noutputs);
 			_servo_controller.UpdateOutputs(_servos.output, _servos.noutputs);
+
+			/* turn off the engine if kill swinch ON */
+			_servo_controller.UpdateIgnition(!_armed.manual_lockdown);
+
 			_outputs.timestamp = hrt_absolute_time();
 
 			// use first valid timestamp_sample for latency tracking
