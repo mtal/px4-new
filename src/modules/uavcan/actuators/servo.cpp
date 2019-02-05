@@ -43,9 +43,11 @@
 
 UavcanServoController::UavcanServoController(uavcan::INode &node) :
 	_node(node),
-	uavcanPublisher(node)
+	arrayCommandPublisher(node),
+	commandPublisher(node)
 {
-	this->uavcanPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
+	this->arrayCommandPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
+	this->commandPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
 
 	if (_perfcnt_invalid_input == nullptr)
 		errx(1, "uavcan: couldn't allocate _perfcnt_invalid_input");
@@ -109,7 +111,7 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 		uavcan::equipment::actuator::Command data;
 		data.actuator_id     = i;
 		data.command_value   = static_cast<int>(outputs[i]);
-		data.command_type 	 = Commands::PWM;
+		data.command_type 	 = (uint8_t)Commands::PWM;
 		message.commands.push_back(data);
     }
 
@@ -117,10 +119,10 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 	 * Publish the command message to the bus
 	 * Note that for a servo it takes one CAN frame
 	 */
-	(void)this->uavcanPublisher.broadcast(message);
+	(void)this->arrayCommandPublisher.broadcast(message);
 }
 
-void UpdateIgnition(bool isWork)
+void UavcanServoController::UpdateIgnition(bool isWork)
 {
 
 	/*
@@ -137,7 +139,7 @@ void UpdateIgnition(bool isWork)
 
 	message.actuator_id     = -1;
 	message.command_value   = isWork;
-	message.command_type	= Commands::Ignition;
+	message.command_type	= (uint8_t)Commands::Ignition;
 
-	(void)this->uavcanPublisher.broadcast(message);
+	(void)this->commandPublisher.broadcast(message);
 }

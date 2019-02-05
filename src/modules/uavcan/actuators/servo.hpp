@@ -46,11 +46,11 @@
 class UavcanServoController
 {
 public:
-	enum class Commands
+	enum class Commands : uint8_t
 	{
 		PWM 		= 1,
 		Ignition 	= 2
-	}
+	};
 
 	UavcanServoController(uavcan::INode &node);
 	~UavcanServoController();
@@ -71,7 +71,8 @@ private:
 	 * libuavcan related things
 	 */
 	uavcan::INode								                        &_node;
-	uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>        uavcanPublisher;
+	uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>        arrayCommandPublisher;
+	uavcan::Publisher<uavcan::equipment::actuator::Command>        		commandPublisher;
 	uavcan::MonotonicTime							                    previousPublication;   ///< rate limiting
 
 	/*
