@@ -70,10 +70,11 @@ private:
 	/*
 	 * libuavcan related things
 	 */
-	uavcan::INode								                        &_node;
-	uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>        arrayCommandPublisher;
-	uavcan::MonotonicTime							                    previousPWMPublication;   		///< rate limiting
-	uavcan::MonotonicTime							                    previousIgnitionPublication;   	///< rate limiting
+	uavcan::INode								                    &_node;
+	uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand> 	arrayCommandPublisher;
+	uavcan::Publisher<uavcan::equipment::actuator::Command>       	commandPublisher;
+	uavcan::MonotonicTime							                previousPWMPublication;   		///< rate limiting
+	uavcan::MonotonicTime							                previousIgnitionPublication;   	///< rate limiting
 
 	/*
 	 * Perf counters

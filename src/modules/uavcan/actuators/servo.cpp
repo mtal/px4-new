@@ -43,9 +43,11 @@
 
 UavcanServoController::UavcanServoController(uavcan::INode &node) :
 	_node(node),
-	arrayCommandPublisher(node)
+	arrayCommandPublisher(node),
+	commandPublisher(node)
 {
 	this->arrayCommandPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
+	this->commandPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
 
 	if (_perfcnt_invalid_input == nullptr)
 		errx(1, "uavcan: couldn't allocate _perfcnt_invalid_input");
@@ -133,14 +135,11 @@ void UavcanServoController::UpdateIgnition(bool isWork)
 
 	this->previousIgnitionPublication = timestamp;
 
-	uavcan::equipment::actuator::ArrayCommand message;
-	uavcan::equipment::actuator::Command data;
+	uavcan::equipment::actuator::Command message;
 
-	data.actuator_id     = -1;
-	data.command_value   = isWork;
-	data.command_type	= (uint8_t)Commands::Ignition;
+	message.actuator_id     = -1;
+	message.command_value   = isWork;
+	message.command_type	= (uint8_t)Commands::Ignition;
 
-	message.commands.push_back(data);
-
-	(void)this->arrayCommandPublisher.broadcast(message);
+	(void)this->commandPublisher.broadcast(message);
 }

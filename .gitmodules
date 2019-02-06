@@ -4,7 +4,7 @@
 	branch = master
 [submodule "src/modules/uavcan/libuavcan"]
 	path = src/modules/uavcan/libuavcan
-	url = https://github.com/UAVCAN/libuavcan.git
+	url = https://github.com/EgoPingvina/libuavcan.git
 	branch = master
 [submodule "msg/tools/genmsg"]
 	path = msg/tools/genmsg
