@@ -72,8 +72,8 @@ private:
 	 */
 	uavcan::INode								                        &_node;
 	uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>        arrayCommandPublisher;
-	uavcan::Publisher<uavcan::equipment::actuator::Command>        		commandPublisher;
-	uavcan::MonotonicTime							                    previousPublication;   ///< rate limiting
+	uavcan::MonotonicTime							                    previousPWMPublication;   		///< rate limiting
+	uavcan::MonotonicTime							                    previousIgnitionPublication;   	///< rate limiting
 
 	/*
 	 * Perf counters

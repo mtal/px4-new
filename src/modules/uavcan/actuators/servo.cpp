@@ -43,11 +43,9 @@
 
 UavcanServoController::UavcanServoController(uavcan::INode &node) :
 	_node(node),
-	arrayCommandPublisher(node),
-	commandPublisher(node)
+	arrayCommandPublisher(node)
 {
 	this->arrayCommandPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
-	this->commandPublisher.setPriority(UAVCAN_COMMAND_TRANSFER_PRIORITY);
 
 	if (_perfcnt_invalid_input == nullptr)
 		errx(1, "uavcan: couldn't allocate _perfcnt_invalid_input");
@@ -80,10 +78,10 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 	 */
 	const auto timestamp = this->_node.getMonotonicTime();
 
-	if ((timestamp - this->previousPublication).toUSec() < (1000000 / MAX_RATE_HZ))
+	if ((timestamp - this->previousPWMPublication).toUSec() < (1000000 / MAX_RATE_HZ))
 		return;
 
-	this->previousPublication = timestamp;
+	this->previousPWMPublication = timestamp;
 
 	/*
 	 * Fill the command message
@@ -130,16 +128,19 @@ void UavcanServoController::UpdateIgnition(bool isWork)
 	*/
 	const auto timestamp = this->_node.getMonotonicTime();
 
-	if ((timestamp - this->previousPublication).toUSec() < (1000000 / MAX_RATE_HZ))
+	if ((timestamp - this->previousIgnitionPublication).toUSec() < (1000000 / MAX_RATE_HZ))
 		return;
 
-	this->previousPublication = timestamp;
+	this->previousIgnitionPublication = timestamp;
 
-	uavcan::equipment::actuator::Command message;
+	uavcan::equipment::actuator::ArrayCommand message;
+	uavcan::equipment::actuator::Command data;
 
-	message.actuator_id     = -1;
-	message.command_value   = isWork;
-	message.command_type	= (uint8_t)Commands::Ignition;
+	data.actuator_id     = -1;
+	data.command_value   = isWork;
+	data.command_type	= (uint8_t)Commands::Ignition;
 
-	(void)this->commandPublisher.broadcast(message);
+	message.commands.push_back(data);
+
+	(void)this->arrayCommandPublisher.broadcast(message);
 }
