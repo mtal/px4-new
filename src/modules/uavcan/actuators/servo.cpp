@@ -40,7 +40,6 @@
 #include "servo.hpp"
 #include <systemlib/err.h>
 #include <drivers/drv_hrt.h>
-#include <err.h>
 
 UavcanServoController::UavcanServoController(uavcan::INode &node) :
 	_node(node),
