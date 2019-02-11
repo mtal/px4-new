@@ -40,6 +40,7 @@
 #include "servo.hpp"
 #include <systemlib/err.h>
 #include <drivers/drv_hrt.h>
+#include <err.h>
 
 UavcanServoController::UavcanServoController(uavcan::INode &node) :
 	_node(node),
@@ -63,7 +64,22 @@ UavcanServoController::~UavcanServoController()
 
 int UavcanServoController::Init()
 {
-	return 0;
+	/*
+     * We defined two data types, but only one of them has a default Data Type ID (DTID):
+     *  - sirius_cybernetics_corporation.GetCurrentTime               - default DTID 242
+     *  - sirius_cybernetics_corporation.PerformLinearLeastSquaresFit - default DTID is not set
+     * The first one can be used as is; the second one needs to be registered first.
+     */
+    auto isOk =
+        uavcan::GlobalDataTypeRegistry::instance().registerDataType<uavcan::equipment::actuator::Command>(1012); // DTID = 1012
+
+	/*
+	 * Possible reasons for a failure:
+	 * - Data type name or ID is not unique
+	 * - Data Type Registry has been frozen and can't be modified anymore
+	 */
+    if (isOk != uavcan::GlobalDataTypeRegistry::RegistrationResultOk)
+        errx("Failed to register the data type: " + std::to_string(isOk));
 }
 
 void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
