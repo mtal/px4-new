@@ -63,13 +63,15 @@ UavcanServoController::~UavcanServoController()
 
 int UavcanServoController::Init()
 {
+	auto isOk = 0;
+
 	/*
      * We defined two data types, but only one of them has a default Data Type ID (DTID):
      *  - sirius_cybernetics_corporation.GetCurrentTime               - default DTID 242
      *  - sirius_cybernetics_corporation.PerformLinearLeastSquaresFit - default DTID is not set
      * The first one can be used as is; the second one needs to be registered first.
      */
-    auto isOk =
+    isOk =
         uavcan::GlobalDataTypeRegistry::instance().registerDataType<uavcan::equipment::actuator::Command>(1012); // DTID = 1012
 
 	/*
@@ -78,7 +80,9 @@ int UavcanServoController::Init()
 	 * - Data Type Registry has been frozen and can't be modified anymore
 	 */
     if (isOk != uavcan::GlobalDataTypeRegistry::RegistrationResultOk)
-        errx("Failed to register the data type: " + std::to_string(isOk));
+        errx(1, "Failed to register the data type: " + isOk);
+
+	return isOk;
 }
 
 void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)

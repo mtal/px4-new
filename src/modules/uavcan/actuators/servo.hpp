@@ -41,6 +41,7 @@
 
 #include <uavcan/uavcan.hpp>
 #include <uavcan/equipment/actuator/ArrayCommand.hpp>
+#include <uavcan/equipment/actuator/Command.hpp>
 #include <perf/perf_counter.h>
 
 class UavcanServoController
