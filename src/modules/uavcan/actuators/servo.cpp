@@ -143,7 +143,6 @@ void UavcanServoController::UpdateOutputs(float *outputs, unsigned num_outputs)
 
 void UavcanServoController::UpdateIgnition(bool isWork)
 {
-
 	/*
 	* Rate limiting - we don't want to congest the bus
 	*/

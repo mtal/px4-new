@@ -654,6 +654,12 @@ int UavcanNode::init(uavcan::NodeID node_id)
 	fill_node_info();
 
 	// Actuators
+	ret = _servo_controller.Init();
+
+	if (ret < 0) {
+		return ret;
+	}
+
 	ret = _esc_controller.init();
 
 	if (ret < 0) {
@@ -666,12 +672,6 @@ int UavcanNode::init(uavcan::NodeID node_id)
 	}
 
 	ret = _hardpoint_controller.init();
-
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = _servo_controller.Init();
 
 	if (ret < 0) {
 		return ret;
