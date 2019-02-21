@@ -1140,7 +1140,6 @@ UavcanNode::ioctl(file *filp, int cmd, unsigned long arg)
 		break;
 
 	case MIXERIOCRESET:
-	warnx("!!!!!! MIXER RESET");
 		if (_mixers != nullptr) {
 			delete _mixers;
 			_mixers = nullptr;
@@ -1150,7 +1149,6 @@ UavcanNode::ioctl(file *filp, int cmd, unsigned long arg)
 		break;
 
 	case MIXERIOCLOADBUF: {
-	warnx("!!!!!! MIXER LOADFROMBUF");
 			const char *buf = (const char *)arg;
 			unsigned buflen = strnlen(buf, 1024);
 
