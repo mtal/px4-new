@@ -1814,8 +1814,6 @@ void MulticopterPositionControl::control_auto()
 			_att_sp.yaw_body = _pos_sp_triplet.current.yaw;
 		}
 
-		float yaw_diff = wrap_pi(_att_sp.yaw_body - _yaw);
-
 		/* only follow previous-current-line for specific triplet type */
 		if (_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_POSITION  ||
 		    _pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_LOITER ||
@@ -1946,19 +1944,6 @@ void MulticopterPositionControl::control_auto()
 				/* compute vector from position-current and previous-position */
 				matrix::Vector2f vec_prev_to_pos((_pos(0) - _prev_pos_sp(0)), (_pos(1) - _prev_pos_sp(1)));
 
-				/* current velocity along track */
-				float vel_sp_along_track_prev = matrix::Vector2f(_vel_sp(0), _vel_sp(1)) * unit_prev_to_current;
-
-				/* distance to target when brake should occur */
-				float target_threshold_xy = 1.5f * get_cruising_speed_xy();
-
-				bool close_to_current = vec_pos_to_current.length() < target_threshold_xy;
-				bool close_to_prev = (vec_prev_to_pos.length() < target_threshold_xy) &&
-						     (vec_prev_to_pos.length() < vec_pos_to_current.length());
-
-				/* indicates if we are at least half the distance from previous to current close to previous */
-				bool is_2_target_threshold = vec_prev_to_current.length() >= 2.0f * target_threshold_xy;
-
 				/* check if the current setpoint is behind */
 				bool current_behind = ((vec_pos_to_current * -1.0f) * unit_prev_to_current) > 0.0f;
 
@@ -1967,145 +1952,6 @@ void MulticopterPositionControl::control_auto()
 
 				/* default velocity along line prev-current */
 				float vel_sp_along_track = get_cruising_speed_xy();
-
-				/*
-				 * compute velocity setpoint along track
-				 */
-
-				/* only go directly to previous setpoint if more than 5m away and previous in front*/
-				if (previous_in_front && (vec_prev_to_pos.length() > 5.0f)) {
-
-					/* just use the default velocity along track */
-					vel_sp_along_track = vec_prev_to_pos.length() * _pos_p(0);
-
-					if (vel_sp_along_track > get_cruising_speed_xy()) {
-						vel_sp_along_track = get_cruising_speed_xy();
-					}
-
-				} else if (current_behind) {
-					/* go directly to current setpoint */
-					vel_sp_along_track = vec_pos_to_current.length() * _pos_p(0);
-					vel_sp_along_track = (vel_sp_along_track < get_cruising_speed_xy()) ? vel_sp_along_track : get_cruising_speed_xy();
-
-				} else if (close_to_prev) {
-					/* accelerate from previous setpoint towards current setpoint */
-
-					/* we are close to previous and current setpoint
-					 * we first compute the start velocity when close to current septoint and use
-					 * this velocity as final velocity when transition occurs from acceleration to deceleration.
-					 * This ensures smooth transition */
-					float final_cruise_speed = get_cruising_speed_xy();
-
-					if (!is_2_target_threshold) {
-
-						/* set target threshold to half dist pre-current */
-						float target_threshold_tmp = target_threshold_xy;
-						target_threshold_xy = vec_prev_to_current.length() * 0.5f;
-
-						if ((target_threshold_xy - _nav_rad.get()) < SIGMA_NORM) {
-							target_threshold_xy = _nav_rad.get();
-						}
-
-						/* velocity close to current setpoint with default zero if no next setpoint is available */
-						float vel_close = 0.0f;
-						float acceptance_radius = 0.0f;
-
-						/* we want to pass and need to compute the desired velocity close to current setpoint */
-						if (next_setpoint_valid &&  !(_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_LOITER)) {
-							/* get velocity close to current that depends on angle between prev-current and current-next line */
-							vel_close = get_vel_close(unit_prev_to_current, unit_current_to_next);
-							acceptance_radius = _nav_rad.get();
-						}
-
-						/* compute velocity at transition where vehicle switches from acceleration to deceleration */
-						if ((target_threshold_tmp - acceptance_radius) < SIGMA_NORM) {
-							final_cruise_speed = vel_close;
-
-						} else {
-							float slope = (get_cruising_speed_xy() - vel_close) / (target_threshold_tmp - acceptance_radius);
-							final_cruise_speed = slope  * (target_threshold_xy - acceptance_radius) + vel_close;
-							final_cruise_speed = (final_cruise_speed > vel_close) ? final_cruise_speed : vel_close;
-						}
-					}
-
-					/* make sure final cruise speed is larger than 0*/
-					final_cruise_speed = (final_cruise_speed > SIGMA_NORM) ? final_cruise_speed : SIGMA_NORM;
-					vel_sp_along_track = final_cruise_speed;
-
-					/* we want to accelerate not too fast
-					* TODO: change the name acceleration_hor_man to something that can
-					* be used by auto and manual */
-					float acc_track = (final_cruise_speed - vel_sp_along_track_prev) / _dt;
-
-					/* if yaw offset is large, only accelerate with 0.5m/s^2 */
-					float acc = (fabsf(yaw_diff) >  math::radians(_mis_yaw_error.get())) ? 0.5f : _acceleration_hor.get();
-
-					if (acc_track > acc) {
-						vel_sp_along_track = acc * _dt + vel_sp_along_track_prev;
-					}
-
-					/* enforce minimum cruise speed */
-					vel_sp_along_track  = math::constrain(vel_sp_along_track, SIGMA_NORM, final_cruise_speed);
-
-				} else if (close_to_current) {
-					/* slow down when close to current setpoint */
-
-					/* check if altidue is within acceptance radius */
-					bool reached_altitude = (dist_to_current_z < _nav_rad.get()) ? true : false;
-
-					if (reached_altitude && next_setpoint_valid
-					    && !(_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_LOITER)) {
-						/* since we have a next setpoint use the angle prev-current-next to compute velocity setpoint limit */
-
-						/* get velocity close to current that depends on angle between prev-current and current-next line */
-						float vel_close = get_vel_close(unit_prev_to_current, unit_current_to_next);
-
-						/* compute velocity along line which depends on distance to current setpoint */
-						if (vec_closest_to_current.length() < _nav_rad.get()) {
-							vel_sp_along_track = vel_close;
-
-						} else {
-
-							if (target_threshold_xy - _nav_rad.get() < SIGMA_NORM) {
-								vel_sp_along_track = vel_close;
-
-							} else {
-								float slope = (get_cruising_speed_xy() - vel_close) / (target_threshold_xy - _nav_rad.get()) ;
-								vel_sp_along_track = slope  * (vec_closest_to_current.length() - _nav_rad.get()) + vel_close;
-							}
-						}
-
-						/* since we want to slow down take over previous velocity setpoint along track if it was lower */
-						if ((vel_sp_along_track_prev < vel_sp_along_track) && (vel_sp_along_track * vel_sp_along_track_prev > 0.0f)) {
-							vel_sp_along_track = vel_sp_along_track_prev;
-						}
-
-						/* if we are close to target and the previous velocity setpoints was smaller than
-						 * vel_sp_along_track, then take over the previous one
-						 * this ensures smoothness since we anyway want to slow down
-						 */
-						if ((vel_sp_along_track_prev < vel_sp_along_track) && (vel_sp_along_track * vel_sp_along_track_prev > 0.0f)
-						    && (vel_sp_along_track_prev > vel_close)) {
-							vel_sp_along_track = vel_sp_along_track_prev;
-						}
-
-						/* make sure that vel_sp_along track is at least min */
-						vel_sp_along_track = (vel_sp_along_track < vel_close) ? vel_close : vel_sp_along_track;
-
-
-					} else {
-
-						/* we want to stop at current setpoint */
-						float slope = (get_cruising_speed_xy())  / target_threshold_xy;
-						vel_sp_along_track =  slope * (vec_closest_to_current.length());
-
-						/* since we want to slow down take over previous velocity setpoint along track if it was lower but ensure its not zero */
-						if ((vel_sp_along_track_prev < vel_sp_along_track) && (vel_sp_along_track * vel_sp_along_track_prev > 0.0f)
-						    && (vel_sp_along_track_prev > 0.5f)) {
-							vel_sp_along_track = vel_sp_along_track_prev;
-						}
-					}
-				}
 
 				/* compute velocity orthogonal to prev-current-line to position*/
 				matrix::Vector2f vec_pos_to_closest = closest_point - matrix::Vector2f(_pos(0), _pos(1));
