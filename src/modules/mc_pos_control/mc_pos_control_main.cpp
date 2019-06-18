@@ -1454,6 +1454,20 @@ MulticopterPositionControl::control_non_manual()
 		_run_alt_control = false;
 	}
 
+
+
+	if (_pos_sp_triplet.current.valid
+	    && _pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_TAKEOFF)
+	{
+		_pos_sp(0) 			= _pos(0);
+		_pos_sp(1) 			= _pos(1);
+		_run_pos_control 	= false;
+		_vel_sp(0) 			= _vel(0);
+		_vel_sp(1) 			= _vel(1);
+	}
+
+
+
 	if (_pos_sp_triplet.current.valid
 	    && _pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_IDLE) {
 		/* idle state, don't run controller and set zero thrust */
