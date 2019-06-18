@@ -729,7 +729,8 @@ Mission::set_mission_items()
 				/* if we just did a normal takeoff navigate to the actual waypoint now */
 				if (_mission_item.nav_cmd == NAV_CMD_TAKEOFF &&
 				    _work_item_type == WORK_ITEM_TYPE_TAKEOFF &&
-				    new_work_item_type == WORK_ITEM_TYPE_DEFAULT) {
+				    new_work_item_type == WORK_ITEM_TYPE_DEFAULT &&
+					false) {
 
 					_mission_item.nav_cmd = NAV_CMD_WAYPOINT;
 					/* ignore yaw here, otherwise it might yaw before heading_sp_update takes over */
