@@ -438,6 +438,8 @@ void enable_failsafe(vehicle_status_s *status, bool old_failsafe, orb_advert_t *
 	status->failsafe = true;
 }
 
+orb_advert_t _turn_off_pusher_on_landing_manual_pub{nullptr};
+
 /**
  * Check failsafe and main status and set navigation status for navigator accordingly
  */
@@ -660,6 +662,19 @@ bool set_nav_state(vehicle_status_s *status, actuator_armed_s *armed, commander_
 
 		/* require local position */
 
+
+
+		// publish about manual landing start
+		turn_off_pusher_on_landing_manual_s turn_off_pusher_on_landing_manual;
+		turn_off_pusher_on_landing_manual.turn_off_pusher_on_landing_manual = true;
+
+		if (_turn_off_pusher_on_landing_manual_pub != nullptr)
+			orb_publish(ORB_ID(turn_off_pusher_on_landing_manual), _turn_off_pusher_on_landing_manual_pub, &turn_off_pusher_on_landing_manual);
+		else
+			_turn_off_pusher_on_landing_manual_pub = orb_advertise(ORB_ID(turn_off_pusher_on_landing_manual), &turn_off_pusher_on_landing_manual);
+
+
+		
 		if (status->engine_failure) {
 			status->nav_state = vehicle_status_s::NAVIGATION_STATE_AUTO_LANDENGFAIL;
 

@@ -109,6 +109,8 @@ set(msg_files
 	timesync_status.msg
 	transponder_report.msg
 	tune_control.msg
+	turn_off_pusher_on_landing.msg
+	turn_off_pusher_on_landing_manual.msg
 	uavcan_parameter_request.msg
 	uavcan_parameter_value.msg
 	ulog_stream.msg

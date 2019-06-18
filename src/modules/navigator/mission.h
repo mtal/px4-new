@@ -57,6 +57,7 @@
 #include <uORB/topics/mission.h>
 #include <uORB/topics/mission_result.h>
 #include <uORB/topics/position_setpoint_triplet.h>
+#include <uORB/topics/turn_off_pusher_on_landing.h>
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_roi.h>
@@ -290,4 +291,6 @@ private:
 
 	uint8_t _mission_execution_mode{mission_result_s::MISSION_EXECUTION_MODE_NORMAL};	/**< the current mode of how the mission is executed,look at mission_result.msg for the definition */
 	bool _execution_mode_changed{false};
+
+	orb_advert_t _turn_off_pusher_on_landing_pub{nullptr};
 };

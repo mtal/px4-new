@@ -62,7 +62,9 @@
 #include <uORB/topics/actuator_armed.h>
 #include <uORB/topics/test_motor.h>
 #include <uORB/topics/actuator_direct.h>
-#include  <uORB/topics/servo_outputs.h>
+#include <uORB/topics/servo_outputs.h>
+#include <uORB/topics/turn_off_pusher_on_landing.h>
+#include <uORB/topics/turn_off_pusher_on_landing_manual.h>
 
 #include "actuators/esc.hpp"
 #include "actuators/hardpoint.hpp"
@@ -177,7 +179,9 @@ private:
 	test_motor_s		_test_motor = {};
 	bool			_test_in_progress = false;
 
-	int _servo_sub = -1; 
+	int _servo_sub = -1;
+	int _turn_off_pusher_sub 	= -1;
+	int _turn_off_pusher_manual_sub 	= -1;
 
 	unsigned		_output_count = 0;		///< number of actuators currently available
 
@@ -216,6 +220,8 @@ private:
 	actuator_direct_s	_actuator_direct 	= {};
 	actuator_outputs_s 	_outputs			= {};
 	servo_outputs_s 	_servos 			= {};
+	turn_off_pusher_on_landing_s 	_turn_off_pusher = {};
+	turn_off_pusher_on_landing_manual_s 	_turn_off_pusher_manual = {};
 
 	perf_counter_t			_perf_control_latency;
 

@@ -145,6 +145,8 @@ UavcanNode::~UavcanNode()
 	(void)orb_unsubscribe(_actuator_direct_sub);
 	orb_unadvertise(_outputs_pub);
 	(void)orb_unsubscribe(_servo_sub);
+	(void)orb_unsubscribe(_turn_off_pusher_sub);
+	(void)orb_unsubscribe(_turn_off_pusher_manual_sub);
 
 	// Removing the sensor bridges
 	auto br = _sensor_bridges.getHead();
@@ -791,9 +793,13 @@ int UavcanNode::run()
 	_test_motor_sub	 		= orb_subscribe(ORB_ID(test_motor));
 	_actuator_direct_sub 	= orb_subscribe(ORB_ID(actuator_direct));
 	_servo_sub 				= orb_subscribe(ORB_ID(servo_outputs));
+	_turn_off_pusher_sub 	= orb_subscribe(ORB_ID(turn_off_pusher_on_landing));
+	_turn_off_pusher_manual_sub 	= orb_subscribe(ORB_ID(turn_off_pusher_on_landing_manual));
 
 	memset(&_outputs, 0, sizeof(_outputs));
 	memset(&_servos, 0, sizeof(_servos));
+	memset(&_turn_off_pusher, 0, sizeof(_turn_off_pusher));
+	memset(&_turn_off_pusher_manual, 0, sizeof(_turn_off_pusher_manual));
 
 	/*
 	 * Set up the time synchronization
@@ -995,8 +1001,18 @@ int UavcanNode::run()
 			_esc_controller.update_outputs(_outputs.output, _outputs.noutputs);
 			_servo_controller.UpdateOutputs(_servos.output, _servos.noutputs);
 
+			bool turn_off_pusher_updated = false;
+			orb_check(_turn_off_pusher_sub, &turn_off_pusher_updated);
+			if (turn_off_pusher_updated)
+				orb_copy(ORB_ID(turn_off_pusher_on_landing), _turn_off_pusher_sub, &_turn_off_pusher);
+
+			bool turn_off_pusher_manual_updated = false;
+			orb_check(_turn_off_pusher_manual_sub, &turn_off_pusher_manual_updated);
+			if (turn_off_pusher_manual_updated)
+				orb_copy(ORB_ID(turn_off_pusher_on_landing_manual), _turn_off_pusher_manual_sub, &_turn_off_pusher_manual);
+
 			/* turn off the engine if kill swinch ON */
-			_servo_controller.UpdateIgnition(!_armed.manual_lockdown);
+			_servo_controller.UpdateIgnition(!_turn_off_pusher.turn_off_pusher_on_landing && !_turn_off_pusher_manual.turn_off_pusher_on_landing_manual /*&& !_armed.manual_lockdown*/);
 
 			_outputs.timestamp = hrt_absolute_time();
 

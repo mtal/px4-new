@@ -50,6 +50,7 @@
 #include <uORB/topics/actuator_armed.h>
 #include <uORB/topics/safety.h>
 #include <uORB/topics/commander_state.h>
+#include <uORB/topics/turn_off_pusher_on_landing_manual.h>
 #include <uORB/topics/vehicle_status_flags.h>
 
 typedef enum {
