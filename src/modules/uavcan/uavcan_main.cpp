@@ -1012,7 +1012,7 @@ int UavcanNode::run()
 				orb_copy(ORB_ID(turn_off_pusher_on_landing_manual), _turn_off_pusher_manual_sub, &_turn_off_pusher_manual);
 
 			/* turn off the engine if kill swinch ON */
-			_servo_controller.UpdateIgnition(!_turn_off_pusher.turn_off_pusher_on_landing && !_turn_off_pusher_manual.turn_off_pusher_on_landing_manual /*&& !_armed.manual_lockdown*/);
+			_servo_controller.UpdateIgnition(!_turn_off_pusher.turn_off_pusher_on_landing && !_turn_off_pusher_manual.turn_off_pusher_on_landing_manual && !_armed.manual_lockdown);
 
 			_outputs.timestamp = hrt_absolute_time();
 
