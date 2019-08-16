@@ -649,6 +649,21 @@ Mission::set_mission_items()
 		return;
 	}
 
+	if (_mission_item.nav_cmd == NAV_CMD_LAND
+		|| _mission_item.nav_cmd == NAV_CMD_VTOL_LAND
+		|| _mission_item.nav_cmd == NAV_CMD_DO_LAND_START)
+	{
+
+		// publish about landing start
+		turn_off_pusher_on_landing_s turn_off_pusher_on_landing;
+		turn_off_pusher_on_landing.turn_off_pusher_on_landing = true;
+
+		if (_turn_off_pusher_on_landing_pub != nullptr)
+			orb_publish(ORB_ID(turn_off_pusher_on_landing), _turn_off_pusher_on_landing_pub, &turn_off_pusher_on_landing);
+		else
+			_turn_off_pusher_on_landing_pub = orb_advertise(ORB_ID(turn_off_pusher_on_landing), &turn_off_pusher_on_landing);
+	}
+
 	/*********************************** handle mission item *********************************************/
 
 	/* handle mission items depending on the mode */
@@ -860,19 +875,6 @@ Mission::set_mission_items()
 				/* we just moved to the landing waypoint, now descend */
 				if (_work_item_type == WORK_ITEM_TYPE_MOVE_TO_LAND &&
 				    new_work_item_type == WORK_ITEM_TYPE_DEFAULT) {
-					
-
-
-					// publish about landing start
-					turn_off_pusher_on_landing_s turn_off_pusher_on_landing;
-					turn_off_pusher_on_landing.turn_off_pusher_on_landing = true;
-
-					if (_turn_off_pusher_on_landing_pub != nullptr)
-						orb_publish(ORB_ID(turn_off_pusher_on_landing), _turn_off_pusher_on_landing_pub, &turn_off_pusher_on_landing);
-					else
-						_turn_off_pusher_on_landing_pub = orb_advertise(ORB_ID(turn_off_pusher_on_landing), &turn_off_pusher_on_landing);
-
-
 
 					if (_mission_item.land_precision > 0 && _mission_item.land_precision < 3) {
 						new_work_item_type = WORK_ITEM_TYPE_PRECISION_LAND;
