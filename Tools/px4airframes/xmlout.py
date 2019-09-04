@@ -25,7 +25,7 @@ class XMLOutput():
         xml_version = ET.SubElement(xml_parameters, "airframe_version_major")
         xml_version.text = "1"
         xml_version = ET.SubElement(xml_parameters, "airframe_version_minor")
-        xml_version.text = "1"
+        xml_version.text = "2"
         for group in groups:
             xml_group = ET.SubElement(xml_parameters, "airframe_group")
             xml_group.attrib["name"] = group.GetName()

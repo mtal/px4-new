@@ -22,7 +22,7 @@ sh /etc/init.d/rc.vtol_defaults
 
 if [ $AUTOCNF == yes ]
 then
-	param set VT_TYPE 2
+	param set VT_TYPE 3
 	param set VT_MOT_COUNT 4
 	param set VT_F_TRANS_THR 0.75
 	param set VT_ARSP_TRANS 12
@@ -59,7 +59,10 @@ then
 
 	param set VT_MOT_COUNT 4
 	param set VT_IDLE_PWM_MC 1080
-	param set VT_TYPE 2
+
+	param set VT_TYPE 3
+	param set VT_F_TR_HGHT 15
+  param set VT_F_TR_HGHT_SF 1
 fi
 
 set MIXER quad_x

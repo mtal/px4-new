@@ -59,7 +59,9 @@ param set SYS_MC_EST_GROUP 2
 param set SYS_RESTART_TYPE 2
 param set VT_F_TRANS_THR 0.75
 param set VT_MOT_COUNT 4
-param set VT_TYPE 2
+param set VT_TYPE 3
+param set VT_F_TR_HGHT 15
+param set VT_F_TR_HGHT_SF 1
 replay tryapplyparams
 simulator start -s
 tone_alarm start
