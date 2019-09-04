@@ -960,7 +960,13 @@ Mission::set_mission_items()
 
 					/* set position setpoint to target during the transition */
 					pos_sp_triplet->previous = pos_sp_triplet->current;
-					generate_waypoint_from_heading(&pos_sp_triplet->current, pos_sp_triplet->current.yaw);
+                    if (has_next_position_item) {
+                        /* got next mission item, update setpoint triplet */
+                        mission_apply_limitation(mission_item_next_position);
+                        mission_item_to_position_setpoint(mission_item_next_position, &pos_sp_triplet->current);
+                    } else {
+                        generate_waypoint_from_heading(&pos_sp_triplet->current, pos_sp_triplet->current.yaw);
+                    }
 				}
 
 				/* don't advance mission after FW to MC command */
