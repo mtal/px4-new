@@ -104,6 +104,9 @@ VtolAttitudeControl::VtolAttitudeControl()
 	} else if (_params.vtol_type == vtol_type::STANDARD) {
 		_vtol_type = new Standard(this);
 
+	} else if (_params.vtol_type == vtol_type::STANDARD_HEIGHT) {
+		_vtol_type = new StandardHeight(this);
+
 	} else {
 		_task_should_exit = true;
 	}
@@ -511,7 +514,7 @@ VtolAttitudeControl::parameters_update()
 	// normally the parameter fw_motors_off can be used to specify this, however, since historically standard vtol code
 	// did not use the interface of the VtolType class to disable motors we will have users flying  around with a wrong
 	// parameter value. Therefore, explicitly set it here such that all motors will be disabled as expected.
-	if (_params.vtol_type == vtol_type::STANDARD) {
+	if (_params.vtol_type == vtol_type::STANDARD || _params.vtol_type == vtol_type::STANDARD_HEIGHT) {
 		_params.fw_motors_off = 12345678;
 	}
 

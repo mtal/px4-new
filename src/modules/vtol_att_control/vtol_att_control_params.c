@@ -79,8 +79,9 @@ PARAM_DEFINE_INT32(VT_FW_PERM_STAB, 0);
  * @value 0 Tailsitter
  * @value 1 Tiltrotor
  * @value 2 Standard
+ * @value 3 Standard Height Transform
  * @min 0
- * @max 2
+ * @max 3
  * @decimal 0
  * @group VTOL Attitude Control
  */

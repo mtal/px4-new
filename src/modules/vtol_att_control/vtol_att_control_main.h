@@ -82,6 +82,7 @@
 #include "tiltrotor.h"
 #include "tailsitter.h"
 #include "standard.h"
+#include "standard_height.h"
 
 
 extern "C" __EXPORT int vtol_att_control_main(int argc, char *argv[]);
